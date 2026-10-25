@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% if product %}ແກ້ໄຂ {{ product.name }}{% else %}ເພີ່ມສິນຄ້າ{% endif %} - Cafe Order</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Noto Sans Lao', sans-serif; }
+    /* field ທີ່ບໍ່ໄດ້ກຳນົດ widget ໃນ forms.py */
+    .field select, .field textarea {
+      width: 100%; border: 1px solid #e7e5e4; border-radius: .25rem; padding: .5rem;
+    }
+    .field textarea { height: 6rem; }
+    .field input, .field select, .field textarea { background: #fff; }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      outline: 2px solid #fbbf24; outline-offset: 1px;
+    }
+  </style>
+</head>
+<body class="bg-stone-100 min-h-screen text-stone-800">
+  <header class="bg-gradient-to-br from-amber-900 to-stone-800 text-amber-50">
+    <div class="max-w-2xl mx-auto px-6 py-6">
+      {% if product %}
+        <a href="{% url 'product_detail' product.pk %}" class="text-sm text-amber-200 hover:text-white">← ກັບໄປໜ້າສິນຄ້າ</a>
+        <h1 class="mt-2 text-2xl font-bold">ແກ້ໄຂ: {{ product.name }}</h1>
+      {% else %}
+        <a href="{% url 'menu_list' %}" class="text-sm text-amber-200 hover:text-white">← ກັບໄປໜ້າເມນູ</a>
+        <h1 class="mt-2 text-2xl font-bold">ເພີ່ມສິນຄ້າ</h1>
+      {% endif %}
+    </div>
+  </header>
+
+  <main class="max-w-2xl mx-auto px-6 py-8">
+    <form method="post" class="space-y-5 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-stone-200 sm:p-8">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      {% for field in form %}
+        <div class="field">
+          {% if field.name == 'is_available' %}
+            <label class="flex items-center gap-2">
+              {{ field }} <span class="font-medium">{{ field.label }}</span>
+            </label>
+          {% else %}
+            <label for="{{ field.id_for_label }}" class="mb-1 block font-medium">{{ field.label }}</label>
+            {{ field }}
+          {% endif %}
+          {% for error in field.errors %}
+            <p class="mt-1 text-sm text-rose-600">{{ error }}</p>
+          {% endfor %}
+        </div>
+      {% endfor %}
+
+      <div class="flex justify-end gap-3 pt-2">
+        <a href="{% if product %}{% url 'product_detail' product.pk %}{% else %}{% url 'menu_list' %}{% endif %}" class="rounded-full px-5 py-2 text-stone-600 hover:bg-stone-100">ຍົກເລີກ</a>
+        <button type="submit" class="rounded-full bg-amber-500 px-6 py-2 font-medium text-white hover:bg-amber-600">ບັນທຶກ</button>
+      </div>
+    </form>
+  </main>
+</body>
+</html>

@@ -1,0 +1,97 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ເມນູ - Cafe Order</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Noto Sans Lao', sans-serif; }
+  </style>
+</head>
+<body class="bg-stone-100 min-h-screen text-stone-800">
+  <header class="bg-gradient-to-br from-amber-900 to-stone-800 text-amber-50">
+    <div class="max-w-5xl mx-auto px-6 py-10 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="text-sm tracking-widest uppercase text-amber-300">Cafe Order</p>
+        <h1 class="text-3xl font-bold mt-1">ເມນູຂອງພວກເຮົາ</h1>
+        <p class="mt-2 text-amber-100/80">
+          {% if q %}ພົບ {{ page.paginator.count }} ລາຍການ ສຳລັບ "{{ q }}"{% else %}{{ page.paginator.count }} ລາຍການ ພ້ອມເສີບ{% endif %}
+        </p>
+      </div>
+      <a href="{% url 'product_create' %}" class="rounded-full bg-amber-400 px-5 py-2 font-medium text-stone-900 hover:bg-amber-300">
+        + ເພີ່ມສິນຄ້າ
+      </a>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-6 py-8">
+    {% for message in messages %}
+      <div class="mb-6 rounded-xl bg-emerald-50 px-4 py-3 text-emerald-800 ring-1 ring-emerald-200">
+        {{ message }}
+      </div>
+    {% endfor %}
+
+    <form method="get" class="mb-6 flex gap-2">
+      <input type="search" name="q" value="{{ q }}" placeholder="ຄົ້ນຫາຊື່ສິນຄ້າ..."
+             class="w-full rounded-full border border-stone-200 bg-white px-5 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400">
+      <button type="submit" class="shrink-0 rounded-full bg-stone-800 px-5 py-2 font-medium text-white hover:bg-stone-700">ຄົ້ນຫາ</button>
+      {% if q %}
+        <a href="{% url 'menu_list' %}" class="shrink-0 rounded-full px-4 py-2 text-stone-600 ring-1 ring-stone-200 hover:bg-white">ລ້າງ</a>
+      {% endif %}
+    </form>
+
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {% for p in page %}
+        <article class="group relative flex flex-col rounded-2xl bg-white p-5 shadow-sm ring-1 ring-stone-200 transition duration-200 hover:-translate-y-1 hover:shadow-lg hover:ring-amber-300">
+          <div class="flex items-start justify-between gap-3">
+            <span class="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
+              {{ p.category.name }}
+            </span>
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-stone-100 text-lg transition group-hover:bg-amber-100">{% if p.category.name == "ຊາ" %}🍵{% elif p.category.name == "ເບເກີຣີ" %}🥐{% elif p.category.name == "ນ້ຳປັ່ນ & ໂຊດາ" %}🥤{% else %}☕{% endif %}</span>
+          </div>
+
+          <h2 class="mt-4 text-lg font-semibold leading-snug">
+            {# after:absolute ເຮັດໃຫ້ກົດໄດ້ທັງ card #}
+            <a href="{% url 'product_detail' p.pk %}" class="after:absolute after:inset-0 after:rounded-2xl group-hover:text-amber-800">
+              {{ p.name }}
+            </a>
+          </h2>
+          {% if p.description %}
+            <p class="mt-1 text-sm text-stone-500 line-clamp-2">{{ p.description }}</p>
+          {% endif %}
+
+          <div class="mt-auto pt-4">
+            <div class="flex items-baseline justify-between border-t border-dashed border-stone-200 pt-4">
+              <span class="text-sm text-stone-400">ລາຄາ</span>
+              <p class="text-xl font-bold text-emerald-700">
+                {{ p.price|intcomma }} <span class="text-sm font-medium">ກີບ</span>
+              </p>
+            </div>
+          </div>
+        </article>
+      {% empty %}
+        <div class="col-span-full rounded-2xl border-2 border-dashed border-stone-300 bg-white p-10 text-center text-stone-500">
+          {% if q %}ບໍ່ພົບສິນຄ້າທີ່ກົງກັບ "{{ q }}"{% else %}ຍັງບໍ່ມີສິນຄ້າ — ເພີ່ມໃນ admin ກ່ອນ{% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+    {% if page.paginator.num_pages > 1 %}
+      {# ແນບ q ໄປນຳ ເພື່ອບໍ່ໃຫ້ຜົນຄົ້ນຫາຫາຍເມື່ອປ່ຽນໜ້າ #}
+      <nav class="mt-8 flex items-center justify-center gap-4">
+        {% if page.has_previous %}
+          <a href="?page={{ page.previous_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}" class="rounded-full bg-white px-5 py-2 ring-1 ring-stone-200 hover:ring-amber-300">← ກ່ອນໜ້າ</a>
+        {% endif %}
+        <span class="text-stone-500">ໜ້າ {{ page.number }} / {{ page.paginator.num_pages }}</span>
+        {% if page.has_next %}
+          <a href="?page={{ page.next_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}" class="rounded-full bg-white px-5 py-2 ring-1 ring-stone-200 hover:ring-amber-300">ຕໍ່ໄປ →</a>
+        {% endif %}
+      </nav>
+    {% endif %}
+  </main>
+</body>
+</html>
